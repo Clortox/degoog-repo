@@ -47,10 +47,8 @@ export default {
       type: "select",
       required: false,
       default: "users",
-      options: [
-        { value: "users", label: "Personal (users)" },
-        { value: "groups", label: "Group (groups)" },
-      ],
+      options: ["users", "groups"],
+      description: "'users' for your personal library, 'groups' for a group ID.",
     },
     {
       key: "pdfSnippets",

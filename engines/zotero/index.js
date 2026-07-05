@@ -45,10 +45,8 @@ export default {
       type: "select",
       required: false,
       default: "users",
-      options: [
-        { value: "users", label: "Personal (users)" },
-        { value: "groups", label: "Group (groups)" },
-      ],
+      options: ["users", "groups"],
+      description: "'users' for your personal library, 'groups' for a group ID.",
     },
     {
       key: "searchMode",
@@ -56,12 +54,9 @@ export default {
       type: "select",
       required: false,
       default: "titleCreatorYear",
-      options: [
-        { value: "titleCreatorYear", label: "Title, creators & year" },
-        { value: "everything", label: "Everything (incl. full text)" },
-      ],
+      options: ["titleCreatorYear", "everything"],
       description:
-        "How the query is matched against your library. 'Everything' also matches PDF full text.",
+        "How the query is matched. 'everything' also matches PDF full text.",
     },
     {
       key: "apiUrl",
