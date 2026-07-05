@@ -60,32 +60,24 @@ export default {
   },
 };
 
-// kiwix-serve's built-in search template renders hits roughly as:
-// <li class="result"><a href="/viewer#book/A/path">Title</a><p class="snippet">…</p></li>
-// This is regex-scraped rather than DOM-parsed to avoid a dependency.
-// IMPORTANT: kiwix-serve's HTML has changed across versions before — curl your
-// own /search?pattern=test&books.name=... and check it actually matches this
-// shape before relying on it; adjust the two regexes below if not.
+
 function parseKiwixResults(html, base) {
   const results = [];
-  const itemRe = /<li[^>]*class="[^"]*result[^"]*"[^>]*>([\s\S]*?)<\/li>/gi;
-  const linkRe = /<a[^>]+href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/i;
-  const snippetRe = /<p[^>]*class="[^"]*snippet[^"]*"[^>]*>([\s\S]*?)<\/p>/i;
+  const itemRe =
+    /<li>\s*<a href="([^"]+)">([\s\S]*?)<\/a>\s*<cite>([\s\S]*?)<\/cite>\s*<div class="book-title">([\s\S]*?)<\/div>/gi;
 
   let match;
   while ((match = itemRe.exec(html)) !== null) {
-    const block = match[1];
-    const linkMatch = linkRe.exec(block);
-    if (!linkMatch) continue;
+    const [, href, rawTitle, rawSnippet, rawBookTitle] = match;
 
-    const href = linkMatch[1];
-    const snippetMatch = snippetRe.exec(block);
+    let title = stripTags(rawTitle);
+    title = title.replace(/^\.{2,}\s*/, "");
 
     results.push({
-      title: stripTags(linkMatch[2]) || href,
+      title: title || href,
       url: href.startsWith("http") ? href : `${base}${href}`,
-      snippet: snippetMatch ? stripTags(snippetMatch[1]) : "",
-      source: "Kiwix",
+      snippet: stripTags(rawSnippet),
+      source: stripTags(rawBookTitle).replace(/^from\s+/i, ""), // "from Rust Docs" -> "Rust Docs"
     });
   }
   return results;
