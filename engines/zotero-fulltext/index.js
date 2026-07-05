@@ -44,7 +44,6 @@ export default {
       label: "Show matching PDF text",
       type: "toggle",
       required: false,
-      default: true,
       description:
         "Fetch each hit's indexed full text and show the passage around your query. Adds extra API requests per result.",
     },
