@@ -10,6 +10,18 @@
       "name": "Kiwix",
       "description": "Search a kixix instance",
       "version": "0.0.1"
+    },
+    {
+      "path": "engines/zotero",
+      "name": "Zotero",
+      "description": "Search your Zotero library items in the Files tab",
+      "version": "0.0.1"
+    },
+    {
+      "path": "engines/zotero-fulltext",
+      "name": "Zotero Full Text",
+      "description": "Search the PDF full-text content of your Zotero publications",
+      "version": "0.0.1"
     }
   ],
   "transports": [],
