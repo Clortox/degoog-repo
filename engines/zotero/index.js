@@ -8,11 +8,9 @@
 // Text" engine, which searches indexed full-text and renders in the normal
 // web-search tab.
 
-let apiUrl = "https://api.zotero.org";
-let libraryType = "users";
+const apiUrl = "https://api.zotero.org";
 let libraryId = "";
 let apiKey = "";
-let searchMode = "titleCreatorYear";
 let pageLength = 25;
 
 export default {
@@ -36,35 +34,7 @@ export default {
       type: "text",
       required: true,
       placeholder: "1234567",
-      description:
-        "Your numeric userID (shown on the API keys page) or a group ID.",
-    },
-    {
-      key: "libraryType",
-      label: "Library type",
-      type: "select",
-      required: false,
-      default: "users",
-      options: ["users", "groups"],
-      description: "'users' for your personal library, 'groups' for a group ID.",
-    },
-    {
-      key: "searchMode",
-      label: "Search mode",
-      type: "select",
-      required: false,
-      default: "titleCreatorYear",
-      options: ["titleCreatorYear", "everything"],
-      description:
-        "How the query is matched. 'everything' also matches PDF full text.",
-    },
-    {
-      key: "apiUrl",
-      label: "Zotero API base URL",
-      type: "url",
-      required: false,
-      default: "https://api.zotero.org",
-      description: "Only change this if you self-host the Zotero API.",
+      description: "Your numeric Zotero userID (shown on the API keys page).",
     },
     {
       key: "pageLength",
@@ -76,11 +46,8 @@ export default {
   ],
 
   configure(settings) {
-    apiUrl = (settings.apiUrl || "https://api.zotero.org").replace(/\/+$/, "");
-    libraryType = settings.libraryType || "users";
     libraryId = (settings.libraryId || "").trim();
     apiKey = settings.apiKey || "";
-    searchMode = settings.searchMode || "titleCreatorYear";
     pageLength = Number(settings.pageLength) || 25;
   },
 
@@ -92,14 +59,14 @@ export default {
 
     const params = new URLSearchParams({
       q: query,
-      qmode: searchMode,
+      qmode: "everything", // match everything, including PDF full text
       itemType: "-attachment", // hide raw attachments; show the parent items
       limit: String(limit),
       start: String(start),
       format: "json",
     });
 
-    const base = `${apiUrl}/${libraryType}/${libraryId}`;
+    const base = `${apiUrl}/users/${libraryId}`;
     const doFetch = context?.fetch ?? fetch;
     const response = await doFetch(`${base}/items?${params.toString()}`, {
       headers: {
@@ -139,7 +106,7 @@ export default {
 
       return {
         title: d.title || d.filename || item.key,
-        url: selectUrl(libraryType, libraryId, item.key),
+        url: `zotero://select/library/items/${item.key}`,
         snippet: (meta + abstract) || "Zotero item",
         source: "Zotero",
       };
@@ -152,11 +119,4 @@ function prettyType(itemType) {
   return itemType
     .replace(/([a-z])([A-Z])/g, "$1 $2")
     .replace(/^\w/, (c) => c.toUpperCase());
-}
-
-function selectUrl(type, id, key) {
-  if (type === "groups") {
-    return `zotero://select/groups/${id}/items/${key}`;
-  }
-  return `zotero://select/library/items/${key}`;
 }

@@ -10,8 +10,7 @@
 // snippet around the query so you see the matching passage. Results deep-link
 // straight into the PDF with `zotero://open-pdf`.
 
-let apiUrl = "https://api.zotero.org";
-let libraryType = "users";
+const apiUrl = "https://api.zotero.org";
 let libraryId = "";
 let apiKey = "";
 let pageLength = 10;
@@ -38,17 +37,7 @@ export default {
       type: "text",
       required: true,
       placeholder: "1234567",
-      description:
-        "Your numeric userID (shown on the API keys page) or a group ID.",
-    },
-    {
-      key: "libraryType",
-      label: "Library type",
-      type: "select",
-      required: false,
-      default: "users",
-      options: ["users", "groups"],
-      description: "'users' for your personal library, 'groups' for a group ID.",
+      description: "Your numeric Zotero userID (shown on the API keys page).",
     },
     {
       key: "pdfSnippets",
@@ -60,14 +49,6 @@ export default {
         "Fetch each hit's indexed full text and show the passage around your query. Adds extra API requests per result.",
     },
     {
-      key: "apiUrl",
-      label: "Zotero API base URL",
-      type: "url",
-      required: false,
-      default: "https://api.zotero.org",
-      description: "Only change this if you self-host the Zotero API.",
-    },
-    {
       key: "pageLength",
       label: "Results per page",
       type: "text",
@@ -77,8 +58,6 @@ export default {
   ],
 
   configure(settings) {
-    apiUrl = (settings.apiUrl || "https://api.zotero.org").replace(/\/+$/, "");
-    libraryType = settings.libraryType || "users";
     libraryId = (settings.libraryId || "").trim();
     apiKey = settings.apiKey || "";
     pageLength = Number(settings.pageLength) || 10;
@@ -91,7 +70,7 @@ export default {
 
     const limit = pageLength;
     const start = (Math.max(page, 1) - 1) * limit;
-    const base = `${apiUrl}/${libraryType}/${libraryId}`;
+    const base = `${apiUrl}/users/${libraryId}`;
     const doFetch = context?.fetch ?? fetch;
 
     const params = new URLSearchParams({
@@ -126,7 +105,7 @@ async function buildResult(item, query, base, doFetch) {
 
   const result = {
     title: d.title || d.filename || item.key,
-    url: selectUrl(libraryType, libraryId, item.key),
+    url: `zotero://select/library/items/${item.key}`,
     snippet: d.abstractNote
       ? d.abstractNote.replace(/\s+/g, " ").slice(0, 220)
       : [prettyType(d.itemType), d.date, creators.slice(0, 3).join(", ")]
@@ -157,7 +136,7 @@ async function buildResult(item, query, base, doFetch) {
       if (ft && ft.content) {
         const snippet = makeSnippet(ft.content, query);
         if (snippet) result.snippet = snippet;
-        result.url = openPdfUrl(libraryType, libraryId, att.key);
+        result.url = `zotero://open-pdf/library/items/${att.key}`;
         break;
       }
     }
@@ -216,12 +195,3 @@ function prettyType(itemType) {
     .replace(/^\w/, (c) => c.toUpperCase());
 }
 
-function selectUrl(type, id, key) {
-  if (type === "groups") return `zotero://select/groups/${id}/items/${key}`;
-  return `zotero://select/library/items/${key}`;
-}
-
-function openPdfUrl(type, id, key) {
-  if (type === "groups") return `zotero://open-pdf/groups/${id}/items/${key}`;
-  return `zotero://open-pdf/library/items/${key}`;
-}
