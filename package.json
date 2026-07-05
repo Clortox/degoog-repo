@@ -4,7 +4,14 @@
   "author": "Clortox",
   "plugins": [],
   "themes": [],
-  "engines": [],
+  "engines": [
+    {
+      "path": "engines/kiwix",
+      "name": "Kiwix",
+      "description": "Search a kixix instance",
+      "version": "0.0.1"
+    }
+  ],
   "transports": [],
   "repo-image": "logo.jpg"
 }
